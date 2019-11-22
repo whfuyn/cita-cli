@@ -174,6 +174,7 @@ pub fn contract_command() -> App<'static, 'static> {
             SubCommand::with_name("QuotaManager")
                 .subcommand(SubCommand::with_name("getBQL").arg(height_arg.clone()))
                 .subcommand(SubCommand::with_name("getDefaultAQL").arg(height_arg.clone()))
+                .subcommand(SubCommand::with_name("getAutoExecQL").arg(height_arg.clone()))
                 .subcommand(SubCommand::with_name("getAccounts").arg(height_arg.clone()))
                 .subcommand(SubCommand::with_name("getQuotas").arg(height_arg.clone()))
                 .subcommand(
@@ -664,6 +665,12 @@ pub fn contract_command() -> App<'static, 'static> {
                         )
                 )
                 .subcommand(
+                    SubCommand::with_name("getAutoExec")
+                        .arg(
+                            height_arg.clone()
+                        )
+                )
+                .subcommand(
                     SubCommand::with_name("getQuotaCheck")
                         .arg(
                             height_arg.clone()
@@ -877,6 +884,9 @@ pub fn contract_processor(
             ("getAQL", Some(m)) => {
                 let address = m.value_of("address").unwrap();
                 QuotaManageClient::create(client).get_aql(address, m.value_of("height"))
+            }
+            ("getAutoExecQL", Some(m)) => {
+                QuotaManageClient::create(client).get_auto_exec_ql(m.value_of("height"))
             }
             ("setBQL", Some(m)) => {
                 let encryption = encryption(m, config);
@@ -1452,6 +1462,10 @@ pub fn contract_processor(
             ("getPermissionCheck", Some(m)) => {
                 let client: SysConfigClient<Client> = SysConfigExt::create(client);
                 SysConfigExt::get_permission_check(&client, m.value_of("height"))
+            }
+            ("getAutoExec", Some(m)) => {
+                let client: SysConfigClient<Client> = SysConfigExt::create(client);
+                SysConfigExt::get_auto_exec(&client, m.value_of("height"))
             }
             ("getQuotaCheck", Some(m)) => {
                 let client: SysConfigClient<Client> = SysConfigExt::create(client);

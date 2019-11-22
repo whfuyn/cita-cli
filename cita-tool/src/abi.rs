@@ -62,7 +62,6 @@ pub fn contract_encode_input(
         .map(|param| param.kind.clone())
         .zip(values.iter().map(|v| v as &str))
         .collect();
-
     let tokens = parse_tokens(&params, lenient)?;
     let result = function
         .encode_input(&tokens)

@@ -12,6 +12,15 @@ use failure::Fail;
 use tool_derive::ContractExt;
 use types::U256;
 
+/// GroupManagement contract address
+pub const GROUP_MANAGEMENT_ADDRESS: &str = "0xffffffffffffffffffffffffffffffffff02000a";
+/// RoleManagement contract address
+pub const ROLE_MANAGEMENT_ADDRESS: &str = "0xffffffffffffffffffffffffffffffffff020007";
+/// PermissionManagement contract address
+pub const PERM_MANAGEMENT_ADDRESS: &str = "0xffffffffffffffffffffffffffffffffff020004";
+/// RoleAuth contract address
+pub const ROLE_AUTH_ADDRESS: &str = "0xffffffffffffffffffffffffffffffffff02000d";
+
 /// Group Client
 #[derive(ContractExt)]
 #[contract(addr = "0xffffffffffffffffffffffffffffffffff020009")]
@@ -80,15 +89,18 @@ where
 
     /// Query the information of the group
     fn query_info(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryInfo", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryInfo", &values, GROUP_MANAGEMENT_ADDRESS, height)
     }
     /// Query the name of the group
     fn query_name(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryName", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryName", &values, GROUP_MANAGEMENT_ADDRESS, height)
     }
     /// Query the accounts of the group
     fn query_accounts(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryAccounts", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryAccounts", &values, GROUP_MANAGEMENT_ADDRESS, height)
     }
     /// Alias for query_child
     fn query_children(&self, address: &str, height: Option<&str>) -> Result<R, E> {
@@ -96,7 +108,8 @@ where
     }
     /// Query the children of the group
     fn query_child(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryChild", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryChild", &values, GROUP_MANAGEMENT_ADDRESS, height)
     }
     /// Alias for query_child_length
     fn query_children_length(&self, address: &str, height: Option<&str>) -> Result<R, E> {
@@ -104,15 +117,23 @@ where
     }
     /// Query the length of children of the group
     fn query_child_length(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryChildLength", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address(
+            "queryChildLength",
+            &values,
+            GROUP_MANAGEMENT_ADDRESS,
+            height,
+        )
     }
     /// Query the parent of the group
     fn query_parent(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryParent", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryParent", &values, GROUP_MANAGEMENT_ADDRESS, height)
     }
     /// Check the account in the group
     fn in_group(&self, address: &str, account_address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("inGroup", &[remove_0x(account_address)], address, height)
+        let values = [remove_0x(address), remove_0x(account_address)];
+        self.contract_call_to_address("inGroup", &values, GROUP_MANAGEMENT_ADDRESS, height)
     }
 }
 
@@ -229,28 +250,37 @@ where
     ///
     /// return The information of role: name and permissions
     fn query_role(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryRole", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryRole", &values, ROLE_MANAGEMENT_ADDRESS, height)
     }
 
     /// Query the name of the role
     ///
     /// return The name of role
     fn query_name(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryName", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryName", &values, ROLE_MANAGEMENT_ADDRESS, height)
     }
 
     /// Query the permissions of the role
     ///
     /// return The permissions of role
     fn query_permissions(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryPermissions", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryPermissions", &values, ROLE_MANAGEMENT_ADDRESS, height)
     }
 
     /// Query the length of the permissions
     ///
     /// return The number of permission
     fn length_of_permissions(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("lengthOfPermissions", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address(
+            "lengthOfPermissions",
+            &values,
+            ROLE_MANAGEMENT_ADDRESS,
+            height,
+        )
     }
 
     /// Check the duplicate permission
@@ -262,8 +292,8 @@ where
         permission: &str,
         height: Option<&str>,
     ) -> Result<R, E> {
-        let values = [remove_0x(permission)];
-        self.contract_call_to_address("inPermissions", &values, address, height)
+        let values = [remove_0x(address), remove_0x(permission)];
+        self.contract_call_to_address("inPermissions", &values, ROLE_MANAGEMENT_ADDRESS, height)
     }
 }
 
@@ -382,8 +412,7 @@ where
     /// return The roles of the account
     fn query_roles(&self, account: &str, height: Option<&str>) -> Result<R, E> {
         let values = [remove_0x(account)];
-        let to = "0xffffffffffffffffffffffffffffffffff02000d";
-        self.contract_call_to_address("queryRoles", &values, &to, height)
+        self.contract_call_to_address("queryRoles", &values, &ROLE_AUTH_ADDRESS, height)
     }
 
     /// Query the accounts that have the role
@@ -392,8 +421,7 @@ where
     /// return The accounts that have the role
     fn query_accounts(&self, role: &str, height: Option<&str>) -> Result<R, E> {
         let values = [remove_0x(role)];
-        let to = "0xffffffffffffffffffffffffffffffffff02000d";
-        self.contract_call_to_address("queryAccounts", &values, &to, height)
+        self.contract_call_to_address("queryAccounts", &values, &ROLE_AUTH_ADDRESS, height)
     }
 }
 
@@ -509,29 +537,33 @@ where
         func: &str,
         height: Option<&str>,
     ) -> Result<R, E> {
-        let values = [remove_0x(contract), remove_0x(func)];
-        self.contract_call_to_address("inPermission", &values, address, height)
+        let values = [remove_0x(address), remove_0x(contract), remove_0x(func)];
+        self.contract_call_to_address("inPermission", &values, PERM_MANAGEMENT_ADDRESS, height)
     }
 
     /// Query the information of the permission
     ///
     /// return The information of permission: name and resources
     fn query_info(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryInfo", &[], address, height)
+        // self.contract_call_to_address("queryInfo", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryInfo", &values, PERM_MANAGEMENT_ADDRESS, height)
     }
 
     /// Query the name of the permission
     ///
     /// return The name of permission
     fn query_name(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryName", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryName", &values, PERM_MANAGEMENT_ADDRESS, height)
     }
 
     /// Query the resource of the permission
     ///
     /// return The resources of permission
     fn query_resource(&self, address: &str, height: Option<&str>) -> Result<R, E> {
-        self.contract_call_to_address("queryResource", &[], address, height)
+        let values = [remove_0x(address)];
+        self.contract_call_to_address("queryResource", &values, PERM_MANAGEMENT_ADDRESS, height)
     }
 }
 
@@ -810,6 +842,11 @@ where
         self.contract_call("getQuotas", &[], None, height)
     }
 
+    /// Get auto execution quota limit
+    fn get_auto_exec_ql(&self, height: Option<&str>) -> Result<R, E> {
+        self.contract_call("getAutoExecQL", &[], None, height)
+    }
+
     /// Set block quota limit
     fn set_bql(&mut self, quota_limit: U256, quota: Option<u64>) -> Result<R, E> {
         let quota_limit = quota_limit.completed_lower_hex();
@@ -972,6 +1009,11 @@ where
     /// Whether to open the permission check
     fn get_permission_check(&self, height: Option<&str>) -> Result<R, E> {
         self.contract_call("getPermissionCheck", &[], None, height)
+    }
+
+    /// Whether to open the auto exec
+    fn get_auto_exec(&self, height: Option<&str>) -> Result<R, E> {
+        self.contract_call("getAutoExec", &[], None, height)
     }
 
     /// Whether to open the quota check
