@@ -1,6 +1,7 @@
 language: rust
 rust:
   - stable
+
 before_script:
   - rustup component add rustfmt-preview
   - rustup component add clippy
@@ -8,4 +9,5 @@ script:
   # For speed up the CI process
   #   See: https://docs.travis-ci.com/user/build-stages/#Data-persistence-between-stages-and-jobs
   - .ci-script/clippy_test.sh
-  - cargo fmt -- --check && cargo test --all && cargo test --no-default-features --features openssl --all
+  - cargo fmt -- --check && cargo test --all
+  - cd cita-cli && cargo test --no-default-features --features openssl
