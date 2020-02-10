@@ -56,7 +56,7 @@ pub fn contract(input: TokenStream) -> TokenStream {
     // parse str to LitStr
     let path = syn::LitStr::new(&path, proc_macro2::Span::call_site());
     // parse str to Ident
-    let trait_name = syn::Ident::new(&trait_name.to_string(), proc_macro2::Span::call_site());
+    let trait_name = syn::Ident::new(&trait_name, proc_macro2::Span::call_site());
     let address = syn::LitStr::new(&address, proc_macro2::Span::call_site());
 
     let output = if let syn::Data::Struct(data) = input.data {

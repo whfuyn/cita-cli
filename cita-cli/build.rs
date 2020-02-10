@@ -32,7 +32,7 @@ pub fn get_commit_describe() -> Option<String> {
         .and_then(|r| {
             String::from_utf8(r.stdout).ok().map(|s| {
                 s.trim()
-                    .splitn(2, "-")
+                    .splitn(2, '-')
                     .collect::<Vec<&str>>()
                     .pop()
                     .unwrap_or_default()

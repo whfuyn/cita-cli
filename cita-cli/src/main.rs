@@ -49,19 +49,19 @@ fn main() {
     let client = Client::new();
 
     if let Err(err) = match matches.subcommand() {
-        ("rpc", Some(m)) => rpc_processor(m, &printer, &mut config, client.clone()),
+        ("rpc", Some(m)) => rpc_processor(m, &printer, &mut config, client),
         ("ethabi", Some(m)) => abi_processor(m, &printer, &config),
         ("key", Some(m)) => key_processor(m, &printer, &config),
-        ("scm", Some(m)) => contract_processor(m, &printer, &mut config, client.clone()),
-        ("transfer", Some(m)) => transfer_processor(m, &printer, &mut config, client.clone()),
-        ("store", Some(m)) => store_processor(m, &printer, &mut config, client.clone()),
-        ("amend", Some(m)) => amend_processor(m, &printer, &mut config, client.clone()),
+        ("scm", Some(m)) => contract_processor(m, &printer, &mut config, client),
+        ("transfer", Some(m)) => transfer_processor(m, &printer, &mut config, client),
+        ("store", Some(m)) => store_processor(m, &printer, &mut config, client),
+        ("amend", Some(m)) => amend_processor(m, &printer, &mut config, client),
         ("search", Some(m)) => {
             search_processor(&parser, m);
             Ok(())
         }
-        ("tx", Some(m)) => tx_processor(m, &printer, &mut config, client.clone()),
-        ("benchmark", Some(m)) => benchmark_processor(m, &printer, &config, client.clone()),
+        ("tx", Some(m)) => tx_processor(m, &printer, &mut config, client),
+        ("benchmark", Some(m)) => benchmark_processor(m, &printer, &config, client),
         ("completions", Some(m)) => {
             completion_processor(&mut parser, m);
             Ok(())
@@ -73,7 +73,7 @@ fn main() {
             Ok(())
         }
     } {
-        printer.eprintln(&Rc::new(err.to_string()), true);
+        printer.eprintln(&Rc::new(err), true);
         process::exit(1);
     }
 }
