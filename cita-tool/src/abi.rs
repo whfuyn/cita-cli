@@ -165,7 +165,9 @@ pub fn decode_params(types: &[String], data: &str) -> Result<Vec<String>, ToolEr
             if to.type_check(&ParamType::Bool) || format!("{}", ty) == "bool[]" {
                 format!("{{\"{}\": {}}}", ty, to)
             } else {
-                format!("{{\"{}\": \"{}\"}}", ty, to)
+                let to_str = format!("{}", to);
+                let escaped_str = to_str.escape_default();
+                format!("{{\"{}\": \"{}\"}}", ty, escaped_str)
             }
         })
         .collect::<Vec<String>>();
@@ -254,7 +256,7 @@ fn get_abi(path: Option<&str>, abi: Option<&str>) -> Result<Box<dyn Read>, ToolE
 
 #[cfg(test)]
 mod test {
-    use super::encode_params;
+    use super::{decode_params, encode_params};
 
     #[test]
     fn test_encode() {
@@ -291,5 +293,13 @@ mod test {
             d,
             "00000003b58e88c75313ec9d329eaaa18fb92f75215b170fffffffffffffffff".to_string()
         );
+
+        let e = encode_params(&["string".to_string()], &["\"".to_string()], true).unwrap();
+        assert_eq!(
+            e,
+            "000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000012200000000000000000000000000000000000000000000000000000000000000".to_string()
+        );
+        let f = decode_params(&["string".to_string()], &e).unwrap();
+        assert_eq!(f, ["{\"string\": \"\\\"\"}".to_string()]);
     }
 }
