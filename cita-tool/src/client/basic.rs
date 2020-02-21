@@ -15,7 +15,6 @@ use tokio;
 use types::U256;
 use uuid::Uuid;
 
-use crate::abi::encode_params;
 use crate::client::{remove_0x, TransactionOptions};
 use crate::crypto::PrivateKey;
 use crate::error::ToolError;
@@ -1037,7 +1036,7 @@ where
     /// Store contract ABI to chain, ABI can be get back by `getAbi` rpc call
     fn store_abi(&mut self, address: &str, content: String, quota: Option<u64>) -> Result<T, E> {
         let address = remove_0x(address);
-        let content_abi = encode_params(&["string".to_owned()], &[content], false)?;
+        let content_abi = encode(content);
         let data = format!("0x{}{}", address, content_abi);
         let tx_options = TransactionOptions::new()
             .set_code(&data)
@@ -1071,7 +1070,7 @@ where
     /// Amend contract ABI
     fn amend_abi(&mut self, address: &str, content: String, quota: Option<u64>) -> Result<T, E> {
         let address = remove_0x(address);
-        let content_abi = encode_params(&["string".to_owned()], &[content], false)?;
+        let content_abi = encode(content);
         let data = format!("0x{}{}", address, content_abi);
         let tx_options = TransactionOptions::new()
             .set_code(&data)
