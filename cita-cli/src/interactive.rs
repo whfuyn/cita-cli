@@ -34,15 +34,6 @@ use crate::printer::{OutputFormat, Printable, Printer};
 use cita_tool::client::basic::Client;
 use cita_tool::{Encryption, JsonRpcResponse};
 
-const ASCII_WORD: &str = r#"
-   ._____. ._____.  _. ._   ._____. ._____.   ._.   ._____. ._____.
-   | .___| |___. | | | | |  |___. | |_____|   |_|   |___. | |_____|
-   | |     ._. | | | |_| |  ._. | |   ._.   ._____. ._. | | ._____.
-   | |     | | |_| \_____/  | | |_/   | |   | ,_, | | | |_/ |_____|
-   | |___. | | ._.   ._.    | |       | |   | | | | | |     ._____.
-   |_____| |_| |_|   |_|    |_|       |_|   |_| |_| |_|     |_____|
-"#;
-
 const ENV_PATTERN: &str = r"\$\{\s*(?P<key>\S+)\s*\}";
 #[cfg(unix)]
 static DEFAULT_BREAK_CHARS: [u8; 18] = [
@@ -110,7 +101,7 @@ pub fn start(url: &str, client: &Client) -> io::Result<()> {
     if !config.json_format() {
         printer.switch_format();
     }
-    println!("{}", Red.bold().paint(ASCII_WORD));
+
     config.print();
 
     start_rustyline(
