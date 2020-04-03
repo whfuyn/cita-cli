@@ -11,7 +11,7 @@ futures = "^0.1"
 serde_json = "^1.0.17"
 serde = "^1.0.53"
 serde_derive = "^1.0.53"
-protobuf = "^2.0.2"
+protobuf = "=2.8.1"
 hex = "^0.3.2"
 tiny-keccak = "^1.4.2"
 secp256k1 = { version = "0.15.0", features = ["recovery"]}

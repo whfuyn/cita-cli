@@ -58,7 +58,7 @@ impl UnverifiedTransaction {
         let sig = Signature::from(signature);
 
         match self.get_crypto() {
-            Crypto::SECP => sig.recover(&hash),
+            Crypto::DEFAULT => sig.recover(&hash),
             _ => Err("Mismatched encryption algorithm".to_string()),
         }
     }
@@ -114,7 +114,7 @@ impl Transaction {
         unverified_tx.set_transaction(self.clone());
         let signature = sign(&sk, &hash);
         unverified_tx.set_signature(signature.to_vec());
-        unverified_tx.set_crypto(Crypto::SECP);
+        unverified_tx.set_crypto(Crypto::DEFAULT);
         unverified_tx
     }
 }
