@@ -1,13 +1,58 @@
 language: rust
 rust:
-  - stable
+- stable
+sudo: required
+cache:
+  timeout: 1024
+  directories:
+  - "$TRAVIS_BUILD_DIR"
+  - "$TRAVIS_BUILD_DIR/docker/release"
+stages:
+- auto-test-in-ci
+- build-bin-for-linux-deploy
+- build-bin-for-mac-deploy
+jobs:
+  include:
+  - stage: automatic-test-in-ci
+    os:
+    - linux
+    dist: bionic
+    name: automatic test for cita-cli
+    before_script:
+    - rustup component add rustfmt-preview
+    - rustup component add clippy
+    script:
+    # For speed up the CI process
+    #   See: https://docs.travis-ci.com/user/build-stages/#Data-persistence-between-stages-and-jobs
+    - .ci-script/clippy_test.sh
+    - cargo fmt -- --check && cargo test --all
+    - cd cita-cli && cargo test --no-default-features --features openssl
 
-before_script:
-  - rustup component add rustfmt-preview
-  - rustup component add clippy
-script:
-  # For speed up the CI process
-  #   See: https://docs.travis-ci.com/user/build-stages/#Data-persistence-between-stages-and-jobs
-  - .ci-script/clippy_test.sh
-  - cargo fmt -- --check && cargo test --all
-  - cd cita-cli && cargo test --no-default-features --features openssl
+  - stage: build-bin-for-linux-deploy
+    os:
+    - linux
+    dist: bionic
+    name: buid bin for linux deploy
+    if: tag IS present
+    script:
+    - "./.ci-script/build-bin-for-linux-deploy.sh"
+
+  - stage: build-bin-for-mac-deploy
+    os:
+    - osx
+    name: buid bin for mac deploy
+    if: tag IS present
+    script:
+    - "./.ci-script/build-bin-for-mac-deploy.sh"
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: $GITHUB_TOKEN
+  file:
+    - "./docker/release/cita-cli-x86_64-musl-tls-${TRAVIS_TAG}.tar.gz"
+    - "./docker/release/cita-cli-x86_64-mac-osx-tls-${TRAVIS_TAG}.tar.gz"
+  on:
+    tags: true
+after_deploy:
+  - "./.ci-script/build-push-docker-image.sh"
