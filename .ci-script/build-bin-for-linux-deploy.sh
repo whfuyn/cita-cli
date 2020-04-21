@@ -1,6 +1,4 @@
 #!/bin/bash
-CITA_CLI_RELEASE_VERSION=$(git describe --tags "$(git rev-list --tags --max-count=1)")
-
 # First, install musl-gcc, default on /usr/local/musl
 wget https://www.musl-libc.org/releases/musl-1.1.19.tar.gz
 tar -zxf musl-1.1.19.tar.gz
@@ -16,4 +14,4 @@ cd ../cita-cli
 cargo install --target x86_64-unknown-linux-musl --path . --force
 cd ../docker/release
 cp $HOME/.cargo/bin/cita-cli ./
-tar -zcf cita-cli-x86_64-musl-tls-"$CITA_CLI_RELEASE_VERSION".tar.gz cita-cli
+tar -zcf cita-cli-x86_64-musl-tls-"$TRAVIS_TAG".tar.gz cita-cli
