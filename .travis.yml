@@ -1,3 +1,14 @@
+################
+# CI Workflow:
+#  stages:
+#    1. test for cita-cli
+#    2. build bin
+#         build bin for linux
+#         build bin for mac
+#  deploy: release bin to Github Release, trigger by `git push --tags`
+#  after_deploy: build cita-cli image and push to https://hub.docker.com/
+
+################
 language: rust
 rust:
 - stable
