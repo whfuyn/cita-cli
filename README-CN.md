@@ -1,10 +1,10 @@
 # cita-cli
 
-[![Build Status](https://travis-ci.org/cryptape/cita-cli.svg?branch=master)](https://travis-ci.org/cryptape/cita-cli)
+[![Build Status](https://travis-ci.org/citahub/cita-cli.svg?branch=master)](https://travis-ci.org/citahub/cita-cli)
 
 [English](./README.md) | 简体中文
 
-CITA CLI 是用于开发中调试 [CITA](https://github.com/cryptape/cita) 的命令行工具。
+CITA CLI 是用于开发中调试 [CITA](https://github.com/citahub/cita) 的命令行工具。
 
 CITA CLI 与 CITA 的关系，就像 redis-cli 和 redis。
 
@@ -24,11 +24,11 @@ CITA CLI 与 CITA 的关系，就像 redis-cli 和 redis。
 
 ### Clone and Build
 
-下载编译后的版本 [here](https://github.com/cryptape/cita-cli/releases)。
+下载编译后的版本 [here](https://github.com/citahub/cita-cli/releases)。
 如果需要最新版本，可编译源码，支持 Secp256k1/Ed25519/Sm2 加密算法:
 
 ```bash
-$ git clone https://github.com/cryptape/cita-cli.git
+$ git clone https://github.com/citahub/cita-cli.git
 $ rustup update stable
 $ cd cita-cli/cita-cli
 $ cargo install --path .
@@ -42,7 +42,7 @@ $ cd cita-cli/cita-cli
 $ cargo install --features openssl --path .
 ```
 
-> `rustls` 静态编译在 [release](https://github.com/cryptape/cita-cli/releases)，
+> `rustls` 静态编译在 [release](https://github.com/citahub/cita-cli/releases)，
 > 并默认支持 https 请求。
 
 #### 编译 Linux 跨平台版本
@@ -77,7 +77,7 @@ $ cargo install --target x86_64-unknown-linux-musl --path .
 
 ```bash
 $ cita-cli
-[       url        ]: http://121.196.200.225:1337
+[       url        ]: http://127.0.0.1:1337
 [       pwd        ]: /home/luoc/Rust-work/cita-cli
 [      color       ]: true
 [      debug       ]: true
@@ -86,7 +86,7 @@ $ cita-cli
 [ completion_style ]: List
 [    edit_style    ]: Emacs
 [   save_private   ]: false
-cita> switch --url http://121.196.200.225:1337
+cita> switch --url http://127.0.0.1:1337
 cita> rpc blockNumber
 {
   "jsonrpc": "2.0",
@@ -100,7 +100,7 @@ cita> key create
   "public": "0xc10a38330fe144062d4a67e2de6f7eed5acf30da9dfd0fb0ecb86d05643afcc4a1b3b34b07731da088c2f564807049ba6632cb94dbcae81d1984ba248d5e5d1e"
 }
 cita> info
-[       url        ]: http://121.196.200.225:1337
+[       url        ]: http://127.0.0.1:1337
 [       pwd        ]: /home/luoc/Rust-work/cita-cli
 [      color       ]: true
 [      debug       ]: true
@@ -124,7 +124,7 @@ cita> exit
 
 - 获取链高度
 ```bash
-$ cita-cli rpc blockNumber --url http://121.196.200.225:1337
+$ cita-cli rpc blockNumber --url http://127.0.0.1:1337
 {
   "jsonrpc": "2.0",
   "result": "0x1bc7f",
@@ -138,7 +138,7 @@ $ cita-cli rpc sendRawTransaction \
     --private-key "0x352416e1c910e413768c51390dfd791b414212b7b4fe6b1a18f58007fa894214" \
     --code "0x606060405234156100105760006000fd5b610015565b60e0806100236000396000f30060606040526000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806360fe47b114604b5780636d4ce63c14606c576045565b60006000fd5b341560565760006000fd5b606a60048080359060200190919050506093565b005b341560775760006000fd5b607d60a3565b6040518082815260200191505060405180910390f35b8060006000508190909055505b50565b6000600060005054905060b1565b905600a165627a7a72305820942223976c6dd48a3aa1d4749f45ad270915cfacd9c0bf3583c018d4c86f9da20029" \
     --height 111146 \
-    --url http://121.196.200.225:1337
+    --url http://127.0.0.1:1337
 {
   "jsonrpc": "2.0",
   "result": {
@@ -153,7 +153,7 @@ $ cita-cli rpc sendRawTransaction \
 ```bash
 $ cita-cli rpc getTransactionReceipt \
     --hash "0x16251c374ee87eae41cbd9203eea481b861738a19c19df9d3c6603b9fbe84478" \
-    --url http://121.196.200.225:1337
+    --url http://127.0.0.1:1337
 {
   "jsonrpc": "2.0",
   "result": {
@@ -179,7 +179,7 @@ $ cita-cli rpc sendRawTransaction \
     --private-key "0x352416e1c910e413768c51390dfd791b414212b7b4fe6b1a18f58007fa894214" \
     --address "0x73552bc4e960a1d53013b40074569ea05b950b4d" \
     --code "0x60fe47b10000000000000000000000000000000000000000000000000000000000000001" \
-    --url http://121.196.200.225:1337
+    --url http://127.0.0.1:1337
 {
   "jsonrpc": "2.0",
   "result": {
@@ -196,7 +196,7 @@ $ cita-cli rpc call \
     --to 0xd9ae0a3b3e856bf5d01061d99721cc4b136d7e26 \
     --data 0x6d4ce63c \
     --height latest \
-    --url http://121.196.200.225:1337
+    --url http://127.0.0.1:1337
 {
   "jsonrpc": "2.0",
   "result": "0x0000000000000000000000000000000000000000000000000000000000000001",
@@ -234,4 +234,4 @@ $ cita-cli ethabi encode function --file ../HelloWorld.abi --name update --param
 
 ## 贡献
 
-请提交在 [https://github.com/cryptape/cita-cli](https://github.com/cryptape/cita-cli)。
+请提交在 [https://github.com/citahub/cita-cli](https://github.com/citahub/cita-cli)。
