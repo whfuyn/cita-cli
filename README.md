@@ -79,7 +79,7 @@ then the cli will get the corresponding environment variable and use it automati
 
 ```bash
 $ cita-cli
-[       url        ]: http://127.0.0.1:1337
+[       url        ]: http://121.196.200.225:1337
 [       pwd        ]: /home/luoc/Rust-work/cita-cli
 [      color       ]: true
 [      debug       ]: true
@@ -88,7 +88,7 @@ $ cita-cli
 [ completion_style ]: List
 [    edit_style    ]: Emacs
 [   save_private   ]: false
-cita> switch --url http://127.0.0.1:1337
+cita> switch --url http://121.196.200.225:1337
 cita> rpc blockNumber
 {
   "jsonrpc": "2.0",
@@ -102,7 +102,7 @@ cita> key create
   "public": "0xc10a38330fe144062d4a67e2de6f7eed5acf30da9dfd0fb0ecb86d05643afcc4a1b3b34b07731da088c2f564807049ba6632cb94dbcae81d1984ba248d5e5d1e"
 }
 cita> info
-[       url        ]: http://127.0.0.1:1337
+[       url        ]: http://121.196.200.225:1337
 [       pwd        ]: /home/luoc/Rust-work/cita-cli
 [      color       ]: true
 [      debug       ]: true
@@ -126,7 +126,7 @@ cita> exit
 
 - Get chain height
 ```bash
-$ cita-cli rpc blockNumber --url http://127.0.0.1:1337
+$ cita-cli rpc blockNumber --url http://121.196.200.225:1337
 {
   "jsonrpc": "2.0",
   "result": "0x1bc7f",
@@ -140,7 +140,7 @@ $ cita-cli rpc sendRawTransaction \
     --private-key "0x352416e1c910e413768c51390dfd791b414212b7b4fe6b1a18f58007fa894214" \
     --code "0x606060405234156100105760006000fd5b610015565b60e0806100236000396000f30060606040526000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806360fe47b114604b5780636d4ce63c14606c576045565b60006000fd5b341560565760006000fd5b606a60048080359060200190919050506093565b005b341560775760006000fd5b607d60a3565b6040518082815260200191505060405180910390f35b8060006000508190909055505b50565b6000600060005054905060b1565b905600a165627a7a72305820942223976c6dd48a3aa1d4749f45ad270915cfacd9c0bf3583c018d4c86f9da20029" \
     --height 111146 \
-    --url http://127.0.0.1:1337
+    --url http://121.196.200.225:1337
 {
   "jsonrpc": "2.0",
   "result": {
@@ -155,7 +155,7 @@ $ cita-cli rpc sendRawTransaction \
 ```bash
 $ cita-cli rpc getTransactionReceipt \
     --hash "0x16251c374ee87eae41cbd9203eea481b861738a19c19df9d3c6603b9fbe84478" \
-    --url http://127.0.0.1:1337
+    --url http://121.196.200.225:1337
 {
   "jsonrpc": "2.0",
   "result": {
@@ -181,7 +181,7 @@ $ cita-cli rpc sendRawTransaction \
     --private-key "0x352416e1c910e413768c51390dfd791b414212b7b4fe6b1a18f58007fa894214" \
     --address "0x73552bc4e960a1d53013b40074569ea05b950b4d" \
     --code "0x60fe47b10000000000000000000000000000000000000000000000000000000000000001" \
-    --url http://127.0.0.1:1337
+    --url http://121.196.200.225:1337
 {
   "jsonrpc": "2.0",
   "result": {
@@ -198,7 +198,7 @@ $ cita-cli rpc call \
     --to 0xd9ae0a3b3e856bf5d01061d99721cc4b136d7e26 \
     --data 0x6d4ce63c \
     --height latest \
-    --url http://127.0.0.1:1337
+    --url http://121.196.200.225:1337
 {
   "jsonrpc": "2.0",
   "result": "0x0000000000000000000000000000000000000000000000000000000000000001",
