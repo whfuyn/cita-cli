@@ -27,7 +27,7 @@ pub use crate::crypto::{
 pub use crate::crypto::{
     pubkey_to_address, secp256k1_sign, sign, sm2_sign, CreateKey, Encryption, Hashable, KeyPair,
     Message, PrivateKey, PubKey, Secp256k1KeyPair, Secp256k1PrivKey, Secp256k1PubKey, Signature,
-    Sm2KeyPair, Sm2Privkey, Sm2Pubkey, Sm2Signature,
+    Sm2KeyPair, Sm2Privkey, Sm2Pubkey, Sm2Signature, sm4_encrypt, sm4_decrypt,
 };
 pub use crate::error::ToolError;
 pub use crate::protos::{Crypto, SignedTransaction, Transaction, UnverifiedTransaction};

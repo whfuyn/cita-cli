@@ -1,6 +1,7 @@
 mod cita_ed25519;
 mod cita_secp256k1;
 mod cita_sm2;
+mod cita_sm4;
 mod crypto_trait;
 
 use hex::encode;
@@ -10,6 +11,7 @@ use std::str::FromStr;
 pub use self::cita_ed25519::{ed25519_sign, Ed25519KeyPair, Ed25519Signature};
 pub use self::cita_secp256k1::{secp256k1_sign, Secp256k1KeyPair, Secp256k1Signature};
 pub use self::cita_sm2::{sm2_sign, Sm2KeyPair, Sm2Signature};
+pub use self::cita_sm4::{sm4_encrypt, sm4_decrypt};
 pub use self::crypto_trait::{CreateKey, Error, Hashable};
 use crate::LowerHex;
 use types::{Address, H256, H512};

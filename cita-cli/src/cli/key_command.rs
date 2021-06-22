@@ -2,7 +2,8 @@ use ansi_term::Colour::Yellow;
 use clap::{App, Arg, ArgMatches, SubCommand};
 
 use cita_tool::{
-    decode, pubkey_to_address, remove_0x, Hashable, KeyPair, LowerHex, Message, PubKey, Signature,
+    encode, decode, pubkey_to_address, sm4_encrypt, sm4_decrypt, sign,
+    remove_0x, Hashable, KeyPair, LowerHex, Message, PubKey, PrivateKey, Signature,
 };
 
 use crate::cli::{encryption, h256_validator, is_hex, key_validator};
@@ -49,7 +50,7 @@ pub fn key_command() -> App<'static, 'static> {
             ),
         )
         .subcommand(
-            SubCommand::with_name("verification")
+            SubCommand::with_name("verify")
                 .arg(
                     Arg::with_name("pubkey")
                         .long("pubkey")
@@ -73,6 +74,63 @@ pub fn key_command() -> App<'static, 'static> {
                         .required(true)
                         .help("signature"),
                 ),
+        )
+        .subcommand(
+            SubCommand::with_name("sign")
+                .arg(
+                    Arg::with_name("privkey")
+                        .long("privkey")
+                        .takes_value(true)
+                        .required(true)
+                        .validator(|privkey| key_validator(&privkey).map(|_| ()))
+                        .help("private key")
+                )
+                .arg(
+                    Arg::with_name("message")
+                        .long("message")
+                        .takes_value(true)
+                        .required(true)
+                        .validator(|message| h256_validator(&message).map(|_| ()))
+                        .help("the message(hash) to sign")
+                )
+        )
+        .subcommand(
+            SubCommand::with_name("sm4_encrypt")
+                .about("encrypt ciphertext using sm4 algorithm")
+                .arg(
+                    Arg::with_name("plaintext")
+                        .long("plaintext")
+                        .takes_value(true)
+                        .required(true)
+                        .validator(|content| is_hex(content.as_str()))
+                        .help("hex encoded plaintext")
+                )
+                .arg(
+                    Arg::with_name("password")
+                        .long("password")
+                        .takes_value(true)
+                        .required(true)
+                        .help("password")
+                )
+        )
+        .subcommand(
+            SubCommand::with_name("sm4_decrypt")
+                .about("decrypt ciphertext using sm4 algorithm")
+                .arg(
+                    Arg::with_name("ciphertext")
+                        .long("ciphertext")
+                        .takes_value(true)
+                        .required(true)
+                        .validator(|content| is_hex(content.as_str()))
+                        .help("hex encoded ciphertext")
+                )
+                .arg(
+                    Arg::with_name("password")
+                        .long("password")
+                        .takes_value(true)
+                        .required(true)
+                        .help("password")
+                )
         )
 }
 
@@ -115,7 +173,7 @@ pub fn key_processor(
                 decode(remove_0x(m.value_of("content").unwrap())).map_err(|err| err.to_string())?;
             printer.println(&content.crypt_hash(encryption).lower_hex(), printer.color());
         }
-        ("verification", Some(m)) => {
+        ("verify", Some(m)) => {
             let encryption = encryption(m, config);
             let pubkey = PubKey::from_str(remove_0x(m.value_of("pubkey").unwrap()), encryption)?;
             let message = Message::from_str(remove_0x(m.value_of("message").unwrap()))
@@ -124,6 +182,30 @@ pub fn key_processor(
                 &decode(remove_0x(m.value_of("signature").unwrap())).map_err(|e| e.to_string())?,
             );
             println!("{}", sig.verify_public(pubkey, &message)?);
+        }
+        ("sign", Some(m)) => {
+            let encryption = encryption(m, config);
+            let privkey = PrivateKey::from_str(remove_0x(m.value_of("privkey").unwrap()), encryption)
+                .map_err(|err| err.to_string())?;
+            let message = Message::from_str(remove_0x(m.value_of("message").unwrap()))
+                .map_err(|err| err.to_string())?;
+
+            let signature = sign(&privkey, &message);
+            println!("signature: 0x{}", signature);
+        }
+        ("sm4_encrypt", Some(m)) => {
+            let password = m.value_of("password").unwrap();
+            let plaintext = decode(remove_0x(m.value_of("plaintext").unwrap()))
+                .map_err(|err| err.to_string())?;
+            let ciphertext = sm4_encrypt(&plaintext, password);
+            println!("ciphertext: 0x{}", encode(ciphertext));
+        }
+        ("sm4_decrypt", Some(m)) => {
+            let password = m.value_of("password").unwrap();
+            let ciphertext = decode(remove_0x(m.value_of("ciphertext").unwrap()))
+                .map_err(|err| err.to_string())?;
+            let plaintext = sm4_decrypt(&ciphertext, password);
+            println!("plaintext: 0x{}", encode(plaintext));
         }
         _ => {
             return Err(sub_matches.usage().to_owned());
