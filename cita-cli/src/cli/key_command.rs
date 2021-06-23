@@ -6,7 +6,7 @@ use cita_tool::{
     remove_0x, Hashable, KeyPair, LowerHex, Message, PubKey, PrivateKey, Signature,
 };
 
-use crate::cli::{encryption, is_hex, key_validator};
+use crate::cli::{encryption, h256_validator, is_hex, key_validator};
 use crate::interactive::GlobalConfig;
 use crate::printer::Printer;
 use std::str::FromStr;
@@ -64,6 +64,7 @@ pub fn key_command() -> App<'static, 'static> {
                         .long("message")
                         .takes_value(true)
                         .required(true)
+                        .validator(|pubkey| h256_validator(&pubkey).map(|_| ()))
                         .help("message"),
                 )
                 .arg(
@@ -89,8 +90,52 @@ pub fn key_command() -> App<'static, 'static> {
                         .long("message")
                         .takes_value(true)
                         .required(true)
-                        .help("the message(hash) to sign")
+                        .validator(|pubkey| h256_validator(&pubkey).map(|_| ()))
+                        .help("the message to sign")
                 )
+        )
+        .subcommand(
+            SubCommand::with_name("sm2_sign")
+                .arg(
+                    Arg::with_name("privkey")
+                        .long("privkey")
+                        .takes_value(true)
+                        .required(true)
+                        .validator(|privkey| key_validator(&privkey).map(|_| ()))
+                        .help("private key")
+                )
+                .arg(
+                    Arg::with_name("message")
+                        .long("message")
+                        .takes_value(true)
+                        .required(true)
+                        .help("the message to sign")
+                )
+        )
+        .subcommand(
+            SubCommand::with_name("sm2_verify")
+                .arg(
+                    Arg::with_name("pubkey")
+                        .long("pubkey")
+                        .takes_value(true)
+                        .required(true)
+                        .validator(|pubkey| key_validator(&pubkey).map(|_| ()))
+                        .help("Pubkey"),
+                )
+                .arg(
+                    Arg::with_name("message")
+                        .long("message")
+                        .takes_value(true)
+                        .required(true)
+                        .help("message"),
+                )
+                .arg(
+                    Arg::with_name("signature")
+                        .long("signature")
+                        .takes_value(true)
+                        .required(true)
+                        .help("signature"),
+                ),
         )
         .subcommand(
             SubCommand::with_name("sm4_encrypt")
@@ -175,11 +220,9 @@ pub fn key_processor(
             let encryption = encryption(m, config);
             let pubkey = PubKey::from_str(remove_0x(m.value_of("pubkey").unwrap()), encryption)?;
 
-            let message = {
-                let msg = m.value_of("message").unwrap().as_bytes();
-                let hash = msg.crypt_hash(encryption).lower_hex();
-                Message::from_str(&hash).map_err(|err| err.to_string())?
-            };
+            let message = Message::from_str(remove_0x(m.value_of("message").unwrap()))
+                .map_err(|err| err.to_string())?;
+
             let sig = Signature::from(
                 &decode(remove_0x(m.value_of("signature").unwrap())).map_err(|e| e.to_string())?,
             );
@@ -190,14 +233,71 @@ pub fn key_processor(
             let privkey = PrivateKey::from_str(remove_0x(m.value_of("privkey").unwrap()), encryption)
                 .map_err(|err| err.to_string())?;
 
-            let message = {
-                let msg = m.value_of("message").unwrap().as_bytes();
-                let hash = msg.crypt_hash(encryption).lower_hex();
-                Message::from_str(&hash).map_err(|err| err.to_string())?
-            };
+            let message = Message::from_str(remove_0x(m.value_of("message").unwrap()))
+                .map_err(|err| err.to_string())?;
 
             let signature = sign(&privkey, &message);
             println!("signature: 0x{}", signature);
+        }
+        ("sm2_sign", Some(m)) => {
+            use libsm::sm2::signature::SigCtx;
+            use libsm::sm2::ecc::EccCtx;
+
+            let sig_ctx = SigCtx::new();
+            let ecc_ctx = EccCtx::new();
+
+            let msg = m.value_of("message").unwrap().as_bytes();
+
+            let sk = {
+                let buf = hex::decode(remove_0x(m.value_of("privkey").unwrap())).unwrap();
+                sig_ctx.load_seckey(&buf).unwrap()
+            };
+            let pk = sig_ctx.pk_from_sk(&sk);
+
+            let hash = sig_ctx.hash("1234567812345678", &pk, msg);
+            println!("msg hash: 0x{}", hex::encode(&hash));
+
+            let sig = sig_ctx.sign(msg, &sk, &pk);
+            let r = sig.get_r();
+            let s = sig.get_s();
+            let sig_bytes = {
+                let mut sig_bytes = [0u8; 128];
+                let r_bytes = r.to_bytes_be();
+                let s_bytes = s.to_bytes_be();
+                sig_bytes[32 - r_bytes.len()..32].copy_from_slice(&r_bytes[..]);
+                sig_bytes[64 - s_bytes.len()..64].copy_from_slice(&s_bytes[..]);
+                sig_bytes[64..].copy_from_slice(&sig_ctx.serialize_pubkey(&pk, false)[1..]);
+                sig_bytes
+            };
+            println!("signature: 0x{}", hex::encode(&sig_bytes));
+            println!("r: 0x{}\ns: 0x{}\n", r.to_str_radix(16), s.to_str_radix(16));
+
+            let (x, y) = ecc_ctx.to_affine(&pk);
+            println!("x: 0x{}\ny: 0x{}\n", x.to_biguint().to_str_radix(16), y.to_biguint().to_str_radix(16));
+        }
+        ("sm2_verify", Some(m)) => {
+            let ctx = libsm::sm2::signature::SigCtx::new();
+
+            let msg = m.value_of("message").unwrap().as_bytes();
+            let sig = {
+                let sig_bytes = hex::decode(remove_0x(m.value_of("signature").unwrap()))
+                    .map_err(|err| err.to_string())?;
+                let r_bytes = &sig_bytes[..32];
+                let s_bytes = &sig_bytes[32..64];
+                libsm::sm2::signature::Signature::new(r_bytes, s_bytes)
+            };
+
+            let pk = {
+                let buf = hex::decode(remove_0x(m.value_of("pubkey").unwrap()))
+                    .map_err(|err| err.to_string())?;
+                ctx.load_pubkey(&buf).unwrap()
+            };
+
+            if ctx.verify(msg, &pk, &sig) {
+                println!("signature is valid");
+            } else {
+                println!("signature is invalid");
+            }
         }
         ("sm4_encrypt", Some(m)) => {
             let password = m.value_of("password").unwrap();
