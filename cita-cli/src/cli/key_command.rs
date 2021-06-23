@@ -6,7 +6,7 @@ use cita_tool::{
     remove_0x, Hashable, KeyPair, LowerHex, Message, PubKey, PrivateKey, Signature,
 };
 
-use crate::cli::{encryption, h256_validator, is_hex, key_validator};
+use crate::cli::{encryption, is_hex, key_validator};
 use crate::interactive::GlobalConfig;
 use crate::printer::Printer;
 use std::str::FromStr;
@@ -64,7 +64,6 @@ pub fn key_command() -> App<'static, 'static> {
                         .long("message")
                         .takes_value(true)
                         .required(true)
-                        .validator(|pubkey| h256_validator(&pubkey).map(|_| ()))
                         .help("message"),
                 )
                 .arg(
@@ -90,7 +89,6 @@ pub fn key_command() -> App<'static, 'static> {
                         .long("message")
                         .takes_value(true)
                         .required(true)
-                        .validator(|message| h256_validator(&message).map(|_| ()))
                         .help("the message(hash) to sign")
                 )
         )
@@ -176,8 +174,12 @@ pub fn key_processor(
         ("verify", Some(m)) => {
             let encryption = encryption(m, config);
             let pubkey = PubKey::from_str(remove_0x(m.value_of("pubkey").unwrap()), encryption)?;
-            let message = Message::from_str(remove_0x(m.value_of("message").unwrap()))
-                .map_err(|err| err.to_string())?;
+
+            let message = {
+                let msg = m.value_of("message").unwrap().as_bytes();
+                let hash = msg.crypt_hash(encryption).lower_hex();
+                Message::from_str(&hash).map_err(|err| err.to_string())?
+            };
             let sig = Signature::from(
                 &decode(remove_0x(m.value_of("signature").unwrap())).map_err(|e| e.to_string())?,
             );
@@ -187,8 +189,12 @@ pub fn key_processor(
             let encryption = encryption(m, config);
             let privkey = PrivateKey::from_str(remove_0x(m.value_of("privkey").unwrap()), encryption)
                 .map_err(|err| err.to_string())?;
-            let message = Message::from_str(remove_0x(m.value_of("message").unwrap()))
-                .map_err(|err| err.to_string())?;
+
+            let message = {
+                let msg = m.value_of("message").unwrap().as_bytes();
+                let hash = msg.crypt_hash(encryption).lower_hex();
+                Message::from_str(&hash).map_err(|err| err.to_string())?
+            };
 
             let signature = sign(&privkey, &message);
             println!("signature: 0x{}", signature);
