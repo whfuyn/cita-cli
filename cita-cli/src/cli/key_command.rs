@@ -288,8 +288,9 @@ pub fn key_processor(
             };
 
             let pk = {
-                let buf = hex::decode(remove_0x(m.value_of("pubkey").unwrap()))
+                let mut buf = hex::decode(remove_0x(m.value_of("pubkey").unwrap()))
                     .map_err(|err| err.to_string())?;
+                buf.insert(0, 4u8);
                 ctx.load_pubkey(&buf).unwrap()
             };
 
