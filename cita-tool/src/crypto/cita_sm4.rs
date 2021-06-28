@@ -1,21 +1,13 @@
-use libsm::{sm3, sm4};
+use libsm::sm4;
 
-/// encrypt plaintext with password
-pub fn sm4_encrypt(plaintext: &[u8], password: &str) -> Vec<u8> {
-    let pwd_hash = sm3::hash::Sm3Hash::new(password.as_bytes()).get_hash();
-
-    let (key, iv) = pwd_hash.split_at(16);
+/// encrypt plaintext with key and iv
+pub fn sm4_encrypt(plaintext: &[u8], key: &[u8], iv: &[u8]) -> Vec<u8> {
     let cipher = sm4::Cipher::new(key, sm4::Mode::Cbc);
-
     cipher.encrypt(plaintext, iv)
 }
 
-/// decrypt plaintext with password
-pub fn sm4_decrypt(ciphertext: &[u8], password: &str) -> Vec<u8> {
-    let pwd_hash = sm3::hash::Sm3Hash::new(password.as_bytes()).get_hash();
-
-    let (key, iv) = pwd_hash.split_at(16);
+/// decrypt plaintext with key and iv
+pub fn sm4_decrypt(ciphertext: &[u8], key: &[u8], iv: &[u8]) -> Vec<u8> {
     let cipher = sm4::Cipher::new(key, sm4::Mode::Cbc);
-
     cipher.decrypt(ciphertext, iv)
 }

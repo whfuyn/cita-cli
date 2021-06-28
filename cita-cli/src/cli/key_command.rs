@@ -2,7 +2,7 @@ use ansi_term::Colour::Yellow;
 use clap::{App, Arg, ArgMatches, SubCommand};
 
 use cita_tool::{
-    encode, decode, pubkey_to_address, sm4_encrypt, sm4_decrypt, sign,
+    pubkey_to_address, sm4_encrypt, sm4_decrypt, sign,
     remove_0x, Hashable, KeyPair, LowerHex, Message, PubKey, PrivateKey, Signature,
 };
 
@@ -213,7 +213,7 @@ pub fn key_processor(
         ("hash", Some(m)) => {
             let encryption = encryption(m, config);
             let content =
-                decode(remove_0x(m.value_of("content").unwrap())).map_err(|err| err.to_string())?;
+                hex::decode(remove_0x(m.value_of("content").unwrap())).map_err(|err| err.to_string())?;
             printer.println(&content.crypt_hash(encryption).lower_hex(), printer.color());
         }
         ("verify", Some(m)) => {
@@ -224,7 +224,7 @@ pub fn key_processor(
                 .map_err(|err| err.to_string())?;
 
             let sig = Signature::from(
-                &decode(remove_0x(m.value_of("signature").unwrap())).map_err(|e| e.to_string())?,
+                &hex::decode(remove_0x(m.value_of("signature").unwrap())).map_err(|e| e.to_string())?,
             );
             println!("{}", sig.verify_public(pubkey, &message)?);
         }
@@ -301,18 +301,30 @@ pub fn key_processor(
             }
         }
         ("sm4_encrypt", Some(m)) => {
-            let password = m.value_of("password").unwrap();
-            let plaintext = decode(remove_0x(m.value_of("plaintext").unwrap()))
+            let plaintext = hex::decode(remove_0x(m.value_of("plaintext").unwrap()))
                 .map_err(|err| err.to_string())?;
-            let ciphertext = sm4_encrypt(&plaintext, password);
-            println!("ciphertext: 0x{}", encode(ciphertext));
+
+            let password = m.value_of("password").unwrap();
+            let pwd_hash = libsm::sm3::hash::Sm3Hash::new(password.as_bytes()).get_hash();
+            let (key, iv) = pwd_hash.split_at(16);
+
+            let ciphertext = sm4_encrypt(&plaintext, key, iv);
+            println!("key: 0x{}", hex::encode(key));
+            println!("iv: 0x{}", hex::encode(iv));
+            println!("ciphertext: 0x{}", hex::encode(ciphertext));
         }
         ("sm4_decrypt", Some(m)) => {
-            let password = m.value_of("password").unwrap();
-            let ciphertext = decode(remove_0x(m.value_of("ciphertext").unwrap()))
+            let ciphertext = hex::decode(remove_0x(m.value_of("ciphertext").unwrap()))
                 .map_err(|err| err.to_string())?;
-            let plaintext = sm4_decrypt(&ciphertext, password);
-            println!("plaintext: 0x{}", encode(plaintext));
+
+            let password = m.value_of("password").unwrap();
+            let pwd_hash = libsm::sm3::hash::Sm3Hash::new(password.as_bytes()).get_hash();
+            let (key, iv) = pwd_hash.split_at(16);
+
+            let plaintext = sm4_decrypt(&ciphertext, key, iv);
+            println!("key: 0x{}", hex::encode(key));
+            println!("iv: 0x{}", hex::encode(iv));
+            println!("plaintext: 0x{}", hex::encode(plaintext));
         }
         _ => {
             return Err(sub_matches.usage().to_owned());
