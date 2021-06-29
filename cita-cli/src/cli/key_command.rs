@@ -1,5 +1,5 @@
 use ansi_term::Colour::Yellow;
-use clap::{App, Arg, ArgMatches, SubCommand};
+use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
 use cita_tool::{
     pubkey_to_address, sm4_encrypt, sm4_decrypt, sign,
@@ -51,6 +51,7 @@ pub fn key_command() -> App<'static, 'static> {
         )
         .subcommand(
             SubCommand::with_name("verify")
+                .setting(AppSettings::Hidden)
                 .arg(
                     Arg::with_name("pubkey")
                         .long("pubkey")
@@ -78,6 +79,7 @@ pub fn key_command() -> App<'static, 'static> {
         )
         .subcommand(
             SubCommand::with_name("sign")
+                .setting(AppSettings::Hidden)
                 .arg(
                     Arg::with_name("privkey")
                         .long("privkey")
