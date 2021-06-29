@@ -96,7 +96,7 @@ pub fn key_command() -> App<'static, 'static> {
                 )
         )
         .subcommand(
-            SubCommand::with_name("sm2_sign")
+            SubCommand::with_name("sm2-sign")
                 .arg(
                     Arg::with_name("privkey")
                         .long("privkey")
@@ -115,7 +115,7 @@ pub fn key_command() -> App<'static, 'static> {
                 )
         )
         .subcommand(
-            SubCommand::with_name("sm2_verify")
+            SubCommand::with_name("sm2-verify")
                 .arg(
                     Arg::with_name("pubkey")
                         .long("pubkey")
@@ -142,7 +142,7 @@ pub fn key_command() -> App<'static, 'static> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name("sm4_encrypt")
+            SubCommand::with_name("sm4-encrypt")
                 .about("encrypt ciphertext using sm4 algorithm")
                 .arg(
                     Arg::with_name("plaintext")
@@ -161,7 +161,7 @@ pub fn key_command() -> App<'static, 'static> {
                 )
         )
         .subcommand(
-            SubCommand::with_name("sm4_decrypt")
+            SubCommand::with_name("sm4-decrypt")
                 .about("decrypt ciphertext using sm4 algorithm")
                 .arg(
                     Arg::with_name("ciphertext")
@@ -243,7 +243,7 @@ pub fn key_processor(
             let signature = sign(&privkey, &message);
             println!("signature: 0x{}", signature);
         }
-        ("sm2_sign", Some(m)) => {
+        ("sm2-sign", Some(m)) => {
             use libsm::sm2::signature::SigCtx;
             use libsm::sm2::ecc::EccCtx;
 
@@ -280,7 +280,7 @@ pub fn key_processor(
             let (x, y) = ecc_ctx.to_affine(&pk);
             println!("x: 0x{}\ny: 0x{}\n", x.to_biguint().to_str_radix(16), y.to_biguint().to_str_radix(16));
         }
-        ("sm2_verify", Some(m)) => {
+        ("sm2-verify", Some(m)) => {
             let ctx = libsm::sm2::signature::SigCtx::new();
 
             let sig = {
@@ -309,7 +309,7 @@ pub fn key_processor(
                 println!("signature is invalid");
             }
         }
-        ("sm4_encrypt", Some(m)) => {
+        ("sm4-encrypt", Some(m)) => {
             let plaintext = hex::decode(remove_0x(m.value_of("plaintext").unwrap()))
                 .map_err(|err| err.to_string())?;
 
@@ -322,7 +322,7 @@ pub fn key_processor(
             println!("iv: 0x{}", hex::encode(iv));
             println!("ciphertext: 0x{}", hex::encode(ciphertext));
         }
-        ("sm4_decrypt", Some(m)) => {
+        ("sm4-decrypt", Some(m)) => {
             let ciphertext = hex::decode(remove_0x(m.value_of("ciphertext").unwrap()))
                 .map_err(|err| err.to_string())?;
 
