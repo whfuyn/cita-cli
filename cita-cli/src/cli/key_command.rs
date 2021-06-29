@@ -256,13 +256,13 @@ pub fn key_processor(
             };
             let pk = sig_ctx.pk_from_sk(&sk);
 
-            let msg_hash = {
+            let msg_digest = {
                 let msg = hex::decode(remove_0x(m.value_of("message").unwrap())).unwrap();
                 sig_ctx.hash("1234567812345678", &pk, &msg)
             };
-            println!("msg hash: 0x{}", hex::encode(&msg_hash));
+            println!("msg digest: 0x{}", hex::encode(&msg_digest));
 
-            let sig = sig_ctx.sign(&msg_hash, &sk, &pk);
+            let sig = sig_ctx.sign_raw(&msg_digest, &sk);
             let r = sig.get_r();
             let s = sig.get_s();
             let sig_bytes = {
@@ -298,12 +298,12 @@ pub fn key_processor(
                 ctx.load_pubkey(&buf).map_err(|e| e.to_string())?
             };
 
-            let msg_hash = {
+            let msg_digest = {
                 let msg = hex::decode(remove_0x(m.value_of("message").unwrap())).unwrap();
                 ctx.hash("1234567812345678", &pk, &msg)
             };
 
-            if ctx.verify(&msg_hash, &pk, &sig) {
+            if ctx.verify_raw(&msg_digest, &pk, &sig) {
                 println!("signature is valid");
             } else {
                 println!("signature is invalid");
