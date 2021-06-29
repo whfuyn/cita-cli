@@ -64,14 +64,15 @@ pub fn key_command() -> App<'static, 'static> {
                         .long("message")
                         .takes_value(true)
                         .required(true)
-                        .validator(|pubkey| h256_validator(&pubkey).map(|_| ()))
-                        .help("message"),
+                        .validator(|msg| h256_validator(&msg).map(|_| ()))
+                        .help("message(h256)"),
                 )
                 .arg(
                     Arg::with_name("signature")
                         .long("signature")
                         .takes_value(true)
                         .required(true)
+                        .validator(|sig| is_hex(&sig).map(|_| ()))
                         .help("signature"),
                 ),
         )
@@ -90,8 +91,8 @@ pub fn key_command() -> App<'static, 'static> {
                         .long("message")
                         .takes_value(true)
                         .required(true)
-                        .validator(|pubkey| h256_validator(&pubkey).map(|_| ()))
-                        .help("the message to sign")
+                        .validator(|msg| h256_validator(&msg).map(|_| ()))
+                        .help("the message(h256) to sign")
                 )
         )
         .subcommand(
@@ -109,6 +110,7 @@ pub fn key_command() -> App<'static, 'static> {
                         .long("message")
                         .takes_value(true)
                         .required(true)
+                        .validator(|msg| is_hex(&msg).map(|_|()))
                         .help("the message to sign")
                 )
         )
@@ -127,6 +129,7 @@ pub fn key_command() -> App<'static, 'static> {
                         .long("message")
                         .takes_value(true)
                         .required(true)
+                        .validator(|msg| is_hex(&msg).map(|_|()))
                         .help("message"),
                 )
                 .arg(
@@ -134,6 +137,7 @@ pub fn key_command() -> App<'static, 'static> {
                         .long("signature")
                         .takes_value(true)
                         .required(true)
+                        .validator(|sig| is_hex(&sig).map(|_|()))
                         .help("signature"),
                 ),
         )
@@ -246,18 +250,19 @@ pub fn key_processor(
             let sig_ctx = SigCtx::new();
             let ecc_ctx = EccCtx::new();
 
-            let msg = m.value_of("message").unwrap().as_bytes();
-
             let sk = {
                 let buf = hex::decode(remove_0x(m.value_of("privkey").unwrap())).unwrap();
                 sig_ctx.load_seckey(&buf).unwrap()
             };
             let pk = sig_ctx.pk_from_sk(&sk);
 
-            let hash = sig_ctx.hash("1234567812345678", &pk, msg);
-            println!("msg hash: 0x{}", hex::encode(&hash));
+            let msg_hash = {
+                let msg = hex::decode(remove_0x(m.value_of("message").unwrap())).unwrap();
+                sig_ctx.hash("1234567812345678", &pk, &msg)
+            };
+            println!("msg hash: 0x{}", hex::encode(&msg_hash));
 
-            let sig = sig_ctx.sign(msg, &sk, &pk);
+            let sig = sig_ctx.sign(&msg_hash, &sk, &pk);
             let r = sig.get_r();
             let s = sig.get_s();
             let sig_bytes = {
@@ -278,7 +283,6 @@ pub fn key_processor(
         ("sm2_verify", Some(m)) => {
             let ctx = libsm::sm2::signature::SigCtx::new();
 
-            let msg = m.value_of("message").unwrap().as_bytes();
             let sig = {
                 let sig_bytes = hex::decode(remove_0x(m.value_of("signature").unwrap()))
                     .map_err(|err| err.to_string())?;
@@ -291,10 +295,15 @@ pub fn key_processor(
                 let mut buf = hex::decode(remove_0x(m.value_of("pubkey").unwrap()))
                     .map_err(|err| err.to_string())?;
                 buf.insert(0, 4u8);
-                ctx.load_pubkey(&buf).unwrap()
+                ctx.load_pubkey(&buf).map_err(|e| e.to_string())?
             };
 
-            if ctx.verify(msg, &pk, &sig) {
+            let msg_hash = {
+                let msg = hex::decode(remove_0x(m.value_of("message").unwrap())).unwrap();
+                ctx.hash("1234567812345678", &pk, &msg)
+            };
+
+            if ctx.verify(&msg_hash, &pk, &sig) {
                 println!("signature is valid");
             } else {
                 println!("signature is invalid");
