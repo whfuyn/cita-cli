@@ -297,7 +297,9 @@ pub fn key_processor(
                 let mut buf = hex::decode(remove_0x(m.value_of("pubkey").unwrap()))
                     .map_err(|err| err.to_string())?;
                 buf.insert(0, 4u8);
-                ctx.load_pubkey(&buf).map_err(|e| e.to_string())?
+                // TODO: remove this funny conversion after this pr is merged
+                // https://github.com/citahub/libsm/pull/26
+                ctx.load_pubkey(&buf).map_err(|e| <&str>::from(e).to_string())?
             };
 
             let msg_digest = {
